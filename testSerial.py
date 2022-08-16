@@ -1,15 +1,12 @@
-#!/usr/bin/env python
-import argparse
-import csv
-import ctypes
-import glob
+#! /usr/bin/env python
 import serial
-import sys
-import time
 from rich import print
-
+from rich.console import Console
+from rich.table import Table
+import ctypes
 from struct import *
 
+# CLASS DEFINITIONS FOR BYTES PARSING
 c_uint8 = ctypes.c_uint8
 class B27Flags_bits(ctypes.LittleEndianStructure):
     _fields_ = [
@@ -43,8 +40,9 @@ class B29Flags(ctypes.Union):
     _fields_ = [("b", B29Flags_bits),
                 ("asbyte", c_uint8)]
 
+# FUNCTION FOR PARSING THE BYTE PACKAGE
 def parse_packet(s):
-  d = map(ord,unpack('=cccccccccccccccccccccccccccccccc', s))
+  d = list(map(ord,unpack('=cccccccccccccccccccccccccccccccc', s)))
   
   msb = float(d[1])
   lsb = float(d[0])
@@ -128,72 +126,36 @@ def parse_packet(s):
         ch_pressure] 
         
 
-  
-def parse_file(csvfile):
-  with open(csvfile, "r") as fh:
-    reader = csv.reader(fh, delimiter=";", lineterminator='\n')
-    for row in reader:
-     
-      pkt = parse_packet(row[1].replace('b','').replace('\'',''))
-     
-      
-      # Invalid values in input stream
-      if pkt[0] < 0 or pkt[1] < 0 or pkt[2] < 0 or pkt[3] < 0 or pkt[4] < 0:
-        print(sys.stderr, "#ERROR1: ", pkt)
-      elif pkt[7] < 0 or pkt[8] < 0 or pkt[9] < 0 or pkt[10] < 0 or pkt[11] < 0:
-        print(sys.stderr, "#ERROR2: ", pkt)
-      elif pkt[0] > 150 or pkt[1] > 100 or pkt[2] > 100 or pkt[3] > 100 or pkt[4] > 100:
-        print(sys.stderr, "#ERROR3: ", pkt)
-      elif pkt[7] > 100 or pkt[8] > 100 or pkt[9] > 100 or pkt[11] > 100:
-        print(sys.stderr, "#ERROR4: ", pkt)
-      elif (pkt[1] - pkt[2]) < -10 or (pkt[1] - pkt[2]) > 35:
-        # Possible yet highly unlikely
-        print(sys.stderr, "#ERROR5: ", pkt)
-      else:
-        print(" ".join(map(str, [row[0]] + pkt)))
-  
+# Define the serial connection
+serialCon = serial.Serial(
+	port = "/dev/ttyAMA0",
+	baudrate = 9600,
+	timeout = 2)
 
+# write to connection
+serialCon.write('S?\r'.encode())
+# read 32 bits from connection
+s = serialCon.read(32)
+# send the 32 bytes to the parse function and store it`s return
+[t1, t2, t3, t4, t5, t6, ch_pressure, temp_set, fanspeed_set, fanspeed, fan_pwm, \
+        io_curr, gp_switch, tap_switch, roomtherm, pump, dwk, alarm_status, ch_cascade_relay, opentherm, \
+        gasvalve, spark, io_signal, ch_ot_disabled, low_water_pressure, pressure_sensor, burner_block, grad_flag, \
+        ch_pressure] = parse_packet(s)
 
-def store_packet(packet):
-  """ 
-  Storing the file 'readable' one-line ascii format, no compression this
-  could be done an at later stage to reduce filesize. Normal month will 
-  be (every 1 seconds packet of roughly 50 bytes) ~ 150MB uncompressed.
-  Compression ratio will be around 10:1.
-  """
-  print(packet)
-  line = packet
-  csvfile = time.strftime("/home/riktonnaer/INTERGAS_DATA_%Y_%m.csv")
-  with open(csvfile, "a") as output:
-    data = [int(time.time()), line]
-    writer = csv.writer(output, delimiter=";", lineterminator='\n')
-    writer.writerow(data)
+# Use rich to print a table to the terminal
+tableTemps = Table(title="Intergas Temperaturen")
+tableTemps.add_column('T1')
+tableTemps.add_column('T2')
+tableTemps.add_column('T3')
+tableTemps.add_column('T4')
+tableTemps.add_column('T5')
+tableTemps.add_column('T6')
+tableTemps.add_row(str(t1),str(t2),str(t3),str(t4),str(t5),str(t6))
+console = Console()
+console.print(tableTemps)
 
-
-def get_packet(port):
-  with serial.Serial(port, 9600, timeout=2) as ser:
-    while True:
-      ts = time.time()
-      ser.write('S?\r'.encode())
-      s = ser.read(32)
-      # Only store valid responses
-      if len(s) == 32:
-      	store_packet(s)
-      time.sleep(1)
-
-
-if __name__ == '__main__':
-  parser = argparse.ArgumentParser(prog=sys.argv[0]) 
-  parser.add_argument('action', choices=('get', 'parse'))
-  parser.add_argument('files', nargs='+')
-  args = parser.parse_args()
-
-  if args.action == 'get':
-    get_packet(args.files[0])
-  elif args.action == 'parse':
-    print('time t1 t2 t3 t4 t5 t6 ch_pressure temp_set fanspeed_set fanspeed fan_pwm ' + \
-          'io_curr gp_switch tap_switch roomtherm pump dwk alarm_status ch_cascade_relay opentherm ' + \
-          'gasvalve spark io_signal ch_ot_disabled low_water_pressure pressure_sensor burner_block grad_flag ' + \
-          'ch_pressure')
-    for fn in args.files:
-        parse_file(fn)
+tableStatus = Table(title="Intergas Status Overzicht")
+tableStatus.add_column('io_curr')
+tableStatus.add_column('gp_switch')
+tableStatus.add_row(str(bool(io_curr)),str(bool(gp_switch)))
+console.print(tableStatus)
