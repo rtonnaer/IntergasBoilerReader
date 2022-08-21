@@ -6,6 +6,42 @@ from rich import print
 from rich.table import Table
 from rich.console import Console
 
+import ctypes
+
+# Data conversions that are needed
+c_uint8 = ctypes.c_uint8
+class B27Flags_bits(ctypes.LittleEndianStructure):
+    _fields_ = [
+            ("gp_switch", c_uint8, 1),
+            ("tap_switch", c_uint8, 1),
+            ("roomtherm", c_uint8, 1),
+            ("pump", c_uint8, 1),
+            ("dwk", c_uint8, 1),
+            ("alarm_status", c_uint8, 1),
+            ("ch_cascade_relay", c_uint8, 1),
+            ("opentherm", c_uint8, 1),
+        ]
+
+class B27Flags(ctypes.Union):
+    _fields_ = [("b", B27Flags_bits),
+                ("asbyte", c_uint8)]
+
+class B29Flags_bits(ctypes.LittleEndianStructure):
+    _fields_ = [
+            ("gasvalve", c_uint8, 1),
+            ("spark", c_uint8, 1),
+            ("io_signal", c_uint8, 1),
+            ("ch_ot_disabled", c_uint8, 1),
+            ("low_water_pressure", c_uint8, 1),
+            ("pressure_sensor", c_uint8, 1),
+            ("burner_block", c_uint8, 1),
+            ("grad_flag", c_uint8, 1),
+        ]
+
+class B29Flags(ctypes.Union):
+    _fields_ = [("b", B29Flags_bits),
+                ("asbyte", c_uint8)]
+
 # Class definition
 class intergas_pc_interface:
   ## define class constants 
@@ -26,7 +62,7 @@ class intergas_pc_interface:
     print(f'Raw byte-string: {self.recv}')
     print(f'Length of byte-string: {len(self.recv)}')
     
-    
+    # Conversion of the Floating Values
     self.t1 = getFloat(self.recv[1],self.recv[0]) # Rookgas Temperatuur (?)
     self.t2 = getFloat(self.recv[3],self.recv[2]) # Wateraanvoer Temperatuur (S1)
     self.t3 = getFloat(self.recv[5],self.recv[4]) # Waterretour Temperatuur (S2)
@@ -40,7 +76,20 @@ class intergas_pc_interface:
     self.fan_pwm = getFloat(self.recv[21],self.recv[20])
     self.io_curr = getFloat(self.recv[23],self.recv[22])
 
-   
+    # Conversion of Flags in byte 27
+    flags = B27Flags() 
+    flags.asbyte = self.recv[27]
+    self.gp_switch = flags.b.gp_switch
+    self.tap_switch = flags.b.tap_switch
+    self.roomtherm = flags.b.roomtherm
+    self.pump = flags.b.pump
+    self.dwk = flags.b.dwk
+    self.alarm_status = flags.b.alarm_status
+    self.ch_cascade_relay = flags.b.ch_cascade_relay
+    self.opentherm = flags.b.opentherm
+
+
+
   def connect(self):  
     ''' method for connecting to the given serial port '''
     self.ser = serial.Serial(port='/dev/' + self.port, baudrate=self.baudrate,timeout=self.timeout)
@@ -69,7 +118,6 @@ class intergas_pc_interface:
     table.add_column('Unit')
     # adding rows
     table.add_row()
-
     table.add_row("Rookgas",str(self.t1),'C')
     table.add_row("Wateraanvoer",str(self.t2),'C')
     table.add_row("Waterretour",str(self.t3),'C')
@@ -82,9 +130,10 @@ class intergas_pc_interface:
     table.add_row("Huidige Fanspeed",str(self.fanspeed),"RPM")
     table.add_row("Fans PWM",str(self.fan_pwm),"unit")
     table.add_row("??",str(self.io_curr),"unit")
-
+    # Rendering the Console
     console = Console()
     console.print(table)
+
 if __name__ == '__main__':
   # initate the connection to the serial interface at port  
   intergas_interface = intergas_pc_interface('ttyAMA0')
