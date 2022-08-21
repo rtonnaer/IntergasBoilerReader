@@ -23,13 +23,20 @@ class intergas_pc_interface:
 
     print(f'Raw byte-string: {self.recv}')
     print(f'Length of byte-string: {len(self.recv)}')
-    print(getFloat(self.recv[1],self.recv[0]))
-    print(getFloat(self.recv[3],self.recv[2]))
-    print(getFloat(self.recv[5],self.recv[4]))
-    print(getFloat(self.recv[7],self.recv[6]))
-    print(getFloat(self.recv[9],self.recv[8]))
-    print(getFloat(self.recv[11],self.recv[10]))
-
+    
+    
+    self.t1 = getFloat(self.recv[1],self.recv[0]) # Rookgas Temperatuur (?)
+    self.t2 = getFloat(self.recv[3],self.recv[2]) # Wateraanvoer Temperatuur (S1)
+    self.t3 = getFloat(self.recv[5],self.recv[4]) # Waterretour Temperatuur (S2)
+    self.t4 = getFloat(self.recv[7],self.recv[6]) # Warmwater Temperatuur (S3)
+    self.t5 = getFloat(self.recv[9],self.recv[8]) # (externe) boiler temperatuur (S4)
+    self.t6 = getFloat(self.recv[11],self.recv[10]) # Buitenvoeler Temperatuur (?)
+    self.ch_pressure  = getFloat(self.recv[13],self.recv[12])
+    self.temp_set = getFloat(self.recv[15],self.recv[14])
+    self.fanspeed_set = getFloat(self.recv[17],self.recv[16])
+    self.fanspeed = getFloat(self.recv[19],self.recv[18])
+    self.fan_pwm = getFloat(self.recv[21],self.recv[20])
+    self.io_curr = getFloat(self.recv[23],self.recv[22])
 
    
   def connect(self):  
