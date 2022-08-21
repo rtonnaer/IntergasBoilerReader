@@ -4,6 +4,7 @@ import time
 import struct
 from rich import print
 from rich.table import Table
+from rich.console import Console
 
 # Class definition
 class intergas_pc_interface:
@@ -78,11 +79,12 @@ class intergas_pc_interface:
     table.add_row("Druk",str(self.ch_pressure),'Bar')
     table.add_row("Ingestelde Temperatuur",str(self.temp_set),'C')
     table.add_row("Ingestelde Fan speed",str(self.fanspeed_set),"RPM")
-    table.add_row("Huidige Fanspeed".str(self.fanspeed),"RPM")
-    table.add_row("Fans PWM",str(self.fan_pwm))
-    table.add_row("??",str(self.io_curr))
+    table.add_row("Huidige Fanspeed",str(self.fanspeed),"RPM")
+    table.add_row("Fans PWM",str(self.fan_pwm),"unit")
+    table.add_row("??",str(self.io_curr),"unit")
 
-
+    console = Console()
+    console.print(table)
 if __name__ == '__main__':
   # initate the connection to the serial interface at port  
   intergas_interface = intergas_pc_interface('ttyAMA0')
@@ -90,5 +92,7 @@ if __name__ == '__main__':
 
   if intergas_interface.is_open == True:
     print('Serial connection is open')
-    intergas_interface.read_boiler_data() # read the boiler data once
-    intergas_interface.print_data() # print the data
+    while True:
+     intergas_interface.read_boiler_data() # read the boiler data once
+     intergas_interface.print_data() # print the data
+     time.sleep(1)
