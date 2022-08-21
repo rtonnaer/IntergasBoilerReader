@@ -113,9 +113,9 @@ class intergas_pc_interface:
       126: "CV in rust",
       204: "Tapwater nadraaien",
       231: "CV nadraaien",
-    }
+     }
   
-  self.status = c2s.get(self.displ_code, "Onbekend (%s)" % self.displ_code)
+    self.status = c2s.get(self.displ_code, "Onbekend (%s)" % self.displ_code)
   
 
   def connect(self):  
