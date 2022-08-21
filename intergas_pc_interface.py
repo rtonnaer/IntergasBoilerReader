@@ -2,7 +2,8 @@
 import serial
 import time
 import struct
-from rich import print, Table
+from rich import print
+from rich.table import Table
 
 # Class definition
 class intergas_pc_interface:
@@ -68,18 +69,18 @@ class intergas_pc_interface:
     # adding rows
     table.add_row()
 
-    table._add_row("Rookgas",self.t1,'C')
-    table._add_row("Wateraanvoer",self.t2,'C')
-    table._add_row("Waterretour",self.t3,'C')
-    table._add_row("Warmwater",self.t4,'C')
-    table._add_row("externe boiler",self.t5,'C')
-    table._add_row("Buitenvoeler",self.t6,'C')
-    table._add_row("Druk",self.ch_pressure,'Bar')
-    table._add_row("Ingestelde Temperatuur",self.temp_set,'C')
-    table._add_row("Ingestelde Fan speed",self.fanspeed_set,"RPM")
-    table._add_row("Huidige Fanspeed".self.fanspeed,"RPM")
-    table._add_row("Fans PWM",self.fan_pwm)
-    table._add_row("??",self.io_curr)
+    table.add_row("Rookgas",self.t1,'C')
+    table.add_row("Wateraanvoer",self.t2,'C')
+    table.add_row("Waterretour",self.t3,'C')
+    table.add_row("Warmwater",self.t4,'C')
+    table.add_row("externe boiler",self.t5,'C')
+    table.add_row("Buitenvoeler",self.t6,'C')
+    table.add_row("Druk",self.ch_pressure,'Bar')
+    table.add_row("Ingestelde Temperatuur",self.temp_set,'C')
+    table.add_row("Ingestelde Fan speed",self.fanspeed_set,"RPM")
+    table.add_row("Huidige Fanspeed".self.fanspeed,"RPM")
+    table.add_row("Fans PWM",self.fan_pwm)
+    table.add_row("??",self.io_curr)
 
 
 if __name__ == '__main__':
