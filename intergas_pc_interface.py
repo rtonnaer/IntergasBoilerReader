@@ -2,7 +2,7 @@
 import serial
 import time
 import struct
-from rich import print
+from rich import print, Table
 
 # Class definition
 class intergas_pc_interface:
@@ -58,6 +58,29 @@ class intergas_pc_interface:
       self.recv = self.ser.read(32) # the boiler sends 32 bytes  of data, these are stored in a class variable
       self.__parse_boiler_data__() # call the internal method to parse the 32 bytes of data
   
+  def print_data(self):
+    ''' method that uses class variables to pretty print the data to the terminal'''
+    
+    table = Table(title="Intergas Data") # defining a rich table incl. column headers
+    table.add_column('Description')
+    table.add_column('Value')
+    table.add_column('Unit')
+    # adding rows
+    table.add_row()
+
+    table._add_row("Rookgas",self.t1,'C')
+    table._add_row("Wateraanvoer",self.t2,'C')
+    table._add_row("Waterretour",self.t3,'C')
+    table._add_row("Warmwater",self.t4,'C')
+    table._add_row("externe boiler",self.t5,'C')
+    table._add_row("Buitenvoeler",self.t6,'C')
+    table._add_row("Druk",self.ch_pressure,'Bar')
+    table._add_row("Ingestelde Temperatuur",self.temp_set,'C')
+    table._add_row("Ingestelde Fan speed",self.fanspeed_set,"RPM")
+    table._add_row("Huidige Fanspeed".self.fanspeed,"RPM")
+    table._add_row("Fans PWM",self.fan_pwm)
+    table._add_row("??",self.io_curr)
+
 
 if __name__ == '__main__':
   # initate the connection to the serial interface at port  
@@ -67,4 +90,4 @@ if __name__ == '__main__':
   if intergas_interface.is_open == True:
     print('Serial connection is open')
     intergas_interface.read_boiler_data() # read the boiler data once
-    
+    intergas_interface.print_data() # print the data
