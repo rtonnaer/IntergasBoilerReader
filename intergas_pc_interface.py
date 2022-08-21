@@ -137,14 +137,14 @@ class intergas_pc_interface:
     tableFlags.add_column('Description')
     tableFlags.add_column('Flag')
 
-    tableFlags.add_row("General Power (?)",self.gp_switch)
-    tableFlags.add_row("Tap Water",self.tap_switch)
-    tableFlags.add_row("Kamer Thermostaat",self.roomtherm)
-    tableFlags.add_row("Pomp Schakelaar",self.pump)
-    tableFlags.add_row("Drieweg Klep",self.dwk)
-    tableFlags.add_row("Alarm",self.alarm_status)
-    tableFlags.add_row("Cascade Klep?",self.ch_cascade_relay)
-    tableFlags.add_row("Open Therm",self.opentherm)
+    tableFlags.add_row("General Power (?)",str(self.gp_switch))
+    tableFlags.add_row("Tap Water",str(self.tap_switch))
+    tableFlags.add_row("Kamer Thermostaat",str(self.roomtherm))
+    tableFlags.add_row("Pomp Schakelaar",str(self.pump))
+    tableFlags.add_row("Drieweg Klep",str(self.dwk))
+    tableFlags.add_row("Alarm",str(self.alarm_status))
+    tableFlags.add_row("Cascade Klep?",str(self.ch_cascade_relay))
+    tableFlags.add_row("Open Therm",str(self.opentherm))
 
     # Rendering the Console
     console = Console()
