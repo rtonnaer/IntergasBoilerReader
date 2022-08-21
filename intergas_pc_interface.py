@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import serial
 import time
+import struct
 from rich import print
 
 # Class definition
@@ -13,8 +14,24 @@ class intergas_pc_interface:
   
   def __parse_boiler_data__(self):
     ''' internal method that is used to convert raw bytes to logical values '''
-    print(bytes(self.recv))
- 
+    def getFloat(msb, lsb):
+      if msb > 127:
+        f = -(float(msb ^ 255) + 1) * 256 - lsb / 100
+      else:
+        f = float(msb * 265 + lsb) / 100
+      return f
+
+    print(f'Raw byte-string: {self.recv}')
+    print(f'Length of byte-string: {len(self.recv)}')
+    print(getFloat(self.recv[1],self.recv[0]))
+    print(getFloat(self.recv[3],self.recv[2]))
+    print(getFloat(self.recv[5],self.recv[4]))
+    print(getFloat(self.recv[7],self.recv[6]))
+    print(getFloat(self.recv[9],self.recv[8]))
+    print(getFloat(self.recv[11],self.recv[10]))
+
+
+   
   def connect(self):  
     ''' method for connecting to the given serial port '''
     self.ser = serial.Serial(port='/dev/' + self.port, baudrate=self.baudrate,timeout=self.timeout)
@@ -31,8 +48,8 @@ class intergas_pc_interface:
       packet.append(0x0D)
 
       self.ser.write(packet)
-      self.recv = self.ser.read(32) # store the first 32 bytes that are recieved in a class variable
-      self. __parse_boiler_data__() 
+      self.recv = self.ser.read(32) # the boiler sends 32 bytes  of data, these are stored in a class variable
+      self.__parse_boiler_data__() # call the internal method to parse the 32 bytes of data
   
 
 if __name__ == '__main__':
