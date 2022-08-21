@@ -177,7 +177,7 @@ class intergas_pc_interface:
     tableMisc.add_column('Description')
     tableMisc.add_column('Value')
     
-    tableMisc.add_row("STatus",self.status)
+    tableMisc.add_row("Status",self.status)
 
     # Rendering the Console
     console = Console()
