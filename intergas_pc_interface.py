@@ -76,7 +76,7 @@ class intergas_pc_interface:
     self.fan_pwm = getFloat(self.recv[21],self.recv[20])
     self.io_curr = getFloat(self.recv[23],self.recv[22])
 
-    # Conversion of Flags in byte 27
+    # Conversion of Flags in Byte 27
     flags = B27Flags() 
     flags.asbyte = self.recv[27]
     self.gp_switch = flags.b.gp_switch
@@ -87,7 +87,8 @@ class intergas_pc_interface:
     self.alarm_status = flags.b.alarm_status
     self.ch_cascade_relay = flags.b.ch_cascade_relay
     self.opentherm = flags.b.opentherm
-
+    
+    # Conversion of Flags in Byte 29
 
 
   def connect(self):  
@@ -111,8 +112,8 @@ class intergas_pc_interface:
   
   def print_data(self):
     ''' method that uses class variables to pretty print the data to the terminal'''
-    
-    table = Table(title="Intergas Data") # defining a rich table incl. column headers
+    ## Printing the Measured values
+    table = Table(title="Intergas Data - Values") # defining a rich table incl. column headers
     table.add_column('Description')
     table.add_column('Value')
     table.add_column('Unit')
@@ -130,9 +131,25 @@ class intergas_pc_interface:
     table.add_row("Huidige Fanspeed",str(self.fanspeed),"RPM")
     table.add_row("Fans PWM",str(self.fan_pwm),"unit")
     table.add_row("??",str(self.io_curr),"unit")
+   
+    ## Printing the Flags
+    tableFlags = Table(title="Intergas Data - Flags") # defining a rich table incl. column headers
+    tableFlags.add_column('Description')
+    tableFlags.add_column('Flag')
+
+    tableFlags.add_row("General Power (?)",self.gp_switch)
+    tableFlags.add_row("Tap Water",self.tap_switch)
+    tableFlags.add_row("Kamer Thermostaat",self.roomtherm)
+    tableFlags.add_row("Pomp Schakelaar",self.pump)
+    tableFlags.add_row("Drieweg Klep",self.dwk)
+    tableFlags.add_row("Alarm",self.alarm_status)
+    tableFlags.add_row("Cascade Klep?",self.ch_cascade_relay)
+    tableFlags.add_row("Open Therm",self.opentherm)
+
     # Rendering the Console
     console = Console()
     console.print(table)
+    console.print(tableFlags)
 
 if __name__ == '__main__':
   # initate the connection to the serial interface at port  
