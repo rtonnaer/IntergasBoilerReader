@@ -5,7 +5,7 @@ import struct
 from rich import print
 from rich.table import Table
 from rich.console import Console
-
+import paho.mqtt.client as mqtt
 import ctypes
 
 # Data conversions that are needed
@@ -42,7 +42,25 @@ class B29Flags(ctypes.Union):
     _fields_ = [("b", B29Flags_bits),
                 ("asbyte", c_uint8)]
 
-# Class definition
+# Class definition MQTT Interface
+
+class mqtt_interface:
+ 
+  def __init__(self,ip):
+    self.broker = ip
+
+  def connect(self):
+    self.client = mqtt.Client('IntergasPcInterface')
+    self.client.username_pw_set('mqtt-login','Welkomaandekade44!')
+    self.client.connect(self.broker,1883)
+  
+  def publish(self,t1,t2,t3,t4):
+    self.client.publish('intergas/t1',t1)
+    self.client.publish('intergas/t2',t2)
+    self.client.publish('intergas/t3',t3)
+    self.client.publish('intergas/t4',t4)
+
+# Class definition PC interface
 class intergas_pc_interface:
   ## define class constants 
   baudrate = 9600
@@ -186,13 +204,16 @@ class intergas_pc_interface:
     console.print(tableMisc)
 
 if __name__ == '__main__':
-  # initate the connection to the serial interface at port  
-  intergas_interface = intergas_pc_interface('ttyAMA0')
-  intergas_interface.connect()
+  # initate the connection to the serial interface and the mqtt interface
+  intergasInterface = intergas_pc_interface('ttyAMA0')
+  intergasInterface.connect()
+  mqttInterface =  mqtt_interface('10.10.10.4')
+  mqttInterface.connect()
 
-  if intergas_interface.is_open == True:
+  if intergasInterface.is_open == True:
     print('Serial connection is open')
     while True:
-     intergas_interface.read_boiler_data() # read the boiler data once
-     intergas_interface.print_data() # print the data
+     intergasInterface.read_boiler_data() # read the boiler data once
+     intergasInterface.print_data() # print the data
+     mqttInterface.publish(intergasInterface.t1,intergasInterface.t2,intergasInterface.t3,intergasInterface.t4)
      time.sleep(1)
