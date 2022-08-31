@@ -134,6 +134,12 @@ class intergas_pc_interface:
      }
   
     self.status = c2s.get(self.displ_code, "Onbekend (%s)" % self.displ_code)
+    boilerData = [self.t1,self.t2,self.t3,self.t4,self.t5,self.t6,self.ch_pressure ,self.temp_set,self.fanspeed_set,self.fanspeed,self.fan_pwm,self.io_curr, ...
+                        self.gp_switch,self.tap_switch,self.roomtherm,self.pump,self.dwk,self.alarm_status,self.ch_cascade_relay,self.opentherm, ...
+                        self.gasvalve,self.spark,self.io_signal,self.ch_ot_disabled,self.low_water_pressure,self.pressure_sensor,self.burner_block,self.grad_flag, ...
+                        self.ch_pressure,self.displ_code]
+    self.boilerData = boilerData
+    return boilerData
   
 
   def connect(self):  
@@ -153,7 +159,8 @@ class intergas_pc_interface:
 
       self.ser.write(packet)
       self.recv = self.ser.read(32) # the boiler sends 32 bytes  of data, these are stored in a class variable
-      self.__parse_boiler_data__() # call the internal method to parse the 32 bytes of data
+      boilerData = self.__parse_boiler_data__() # call the internal method to parse the 32 bytes of data
+      return boilerData
   
   def print_data(self):
     ''' method that uses class variables to pretty print the data to the terminal'''
@@ -213,7 +220,8 @@ if __name__ == '__main__':
   if intergasInterface.is_open == True:
     print('Serial connection is open')
     while True:
-     intergasInterface.read_boiler_data() # read the boiler data once
-     intergasInterface.print_data() # print the data
+     boilerData = intergasInterface.read_boiler_data() # read the boiler data once and return it as a list
+     # intergasInterface.print_data() # print the data
+     print(boilerData)
      mqttInterface.publish(intergasInterface.t1,intergasInterface.t2,intergasInterface.t3,intergasInterface.t4)
-     time.sleep(1)
+     time.sleep(0.5)
