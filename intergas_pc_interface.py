@@ -54,11 +54,20 @@ class mqtt_interface:
     self.client.username_pw_set('mqtt-login','Welkomaandekade44!')
     self.client.connect(self.broker,1883)
   
-  def publish(self,t1,t2,t3,t4):
-    self.client.publish('intergas/t1',t1)
-    self.client.publish('intergas/t2',t2)
-    self.client.publish('intergas/t3',t3)
-    self.client.publish('intergas/t4',t4)
+  def publish(self,boiler_data):
+    self.client.publish('intergas/t1',boiler_data[0])
+    self.client.publish('intergas/t2',boiler_data[1])
+    self.client.publish('intergas/t3',boiler_data[2])
+    self.client.publish('intergas/t4',boiler_data[3])
+
+    self.client.publish('intergas/chPress',boiler_data[6])
+    self.client.publish('intergas/fanSpdSet',boiler_data[7])
+    self.client.publish('intergas/fanSpd',boiler_data[8])
+    self.client.publish('intergas/fanPWM',boiler_data[9])
+
+    self.client.publish('intergas/gpSwitch',boiler_data[12])
+    self.client.publish('intergas/tapSwitch',boiler_data[13])
+
 
 # Class definition PC interface
 class intergas_pc_interface:
@@ -219,12 +228,7 @@ if __name__ == '__main__':
 
   if intergasInterface.is_open == True:
     print('Serial connection is open')
-    while True:
-     st = time.time()
-     boilerData = intergasInterface.read_boiler_data() # read the boiler data once and return it as a list
-
-     print(st-time.time())
-     # intergasInterface.print_data() # print the data
-     
-     mqttInterface.publish(intergasInterface.t1,intergasInterface.t2,intergasInterface.t3,intergasInterface.t4)
+    while True:     
+     boilerData = intergasInterface.read_boiler_data() # read the boiler data once and return it as a list 
+     mqttInterface.publish(boilerData) # send boiler data to the publish function
      time.sleep(0.5)
